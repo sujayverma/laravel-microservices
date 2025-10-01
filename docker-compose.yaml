@@ -1,0 +1,51 @@
+services:
+  frontend:
+    image: antoniopapa1991/admin-frontend
+    depends_on:
+      - backend
+    networks:
+      - laravel-app
+
+  backend:
+    image: laravel_backend
+    container_name: admin_api
+    build:
+      context: .
+      dockerfile: dockerfile
+    environment:
+      DB_HOST: db
+      DB_DATABASE: admin
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+    ports:
+      - 8000:8000
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    networks:
+      - laravel-app
+
+  db:
+    container_name: admin_db
+    image: mysql
+    environment:
+      MYSQL_DATABASE: laravel
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravel
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    networks:
+    - laravel-app
+
+networks:
+  laravel-app:
+
+
+volumes:
+  mysql_data:
