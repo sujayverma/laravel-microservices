@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpFoundation\Response;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserUpdateRequest;
+use App\Http\Resources\UserResource;
 
 class UserController extends Controller
 {
@@ -30,13 +31,20 @@ class UserController extends Controller
     public function index()
     {
         // return response()->json(['message' => 'User index']);
-        return response()->json(User::paginate(), Response::HTTP_OK);
-
+        $users = User::paginate(10); // you can specify page size
+        if ($users->isEmpty()) {
+            return response()->json(['message' => 'No users found'], Response::HTTP_NOT_FOUND);
+        }
+        return UserResource::collection($users);
     }
 
     public function show($id)
     {
-        return response()->json(User::find($id), Response::HTTP_OK);
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+        return response()->json(['message' => 'success', 'data' => new UserResource($user)], Response::HTTP_OK);
     }
 
     public function store(UserCreateRequest $request)
@@ -45,9 +53,10 @@ class UserController extends Controller
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
             'email' => $request->email,
-            'password' => Hash::make('password')
+            'password' => Hash::make('password'),
+            'role_id' => $request->role_id
         ]);
-        return response()->json($user, Response::HTTP_CREATED);
+        return response()->json(new UserResource($user), Response::HTTP_CREATED);
     }
 
     public function update(UserUpdateRequest $request, $id)
@@ -56,10 +65,10 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
         }
-        $user->update($request->only(['first_name', 'last_name', 'email']) +
+        $user->update($request->only(['first_name', 'last_name', 'email', 'role_id']) +
             ($request->filled('password') ? ['password' => Hash::make($request->password)] : [ 'password' => $user->password ] )
         );
-        return response()->json($user, Response::HTTP_ACCEPTED);
+        return response()->json(new UserResource($user), Response::HTTP_ACCEPTED);
     }
 
     public function destroy($id)
@@ -75,7 +84,7 @@ class UserController extends Controller
     public function profile()
     {
         $user = auth()->user();
-        return response()->json($user, Response::HTTP_OK);
+        return response()->json(new UserResource($user), Response::HTTP_OK);
     }
 
     public function changePassword(Request $request)
@@ -106,9 +115,9 @@ class UserController extends Controller
         ]);
 
         $user = auth()->user();
-        $user->update($request->only(['first_name', 'last_name', 'email']));
+        $user->update($request->only(['first_name', 'last_name', 'email', 'role_id']));
 
-        return response()->json($user, Response::HTTP_OK);
+        return response()->json(new UserResource($user), Response::HTTP_OK);
     }   
 
 }

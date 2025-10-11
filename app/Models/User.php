@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
+use App\Models\Role;
 
 /**
  * @property int $id
@@ -49,6 +50,7 @@ class User extends Authenticatable implements OAuthenticatable
         'last_name',
         'email',
         'password',
+        'role_id'
     ];
 
     /**
@@ -71,5 +73,10 @@ class User extends Authenticatable implements OAuthenticatable
         return [
             'password' => 'hashed',
         ];
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 }
