@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ImageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,4 +36,5 @@ Route::group(['middleware' => 'auth:api'], function() {
    Route::post('/update-profile', [UserController::class, 'updateProfile']);
    Route::apiResource('roles', RoleController::class);
    Route::apiResource('products', ProductController::class);
+   Route::post('/upload-image', [ImageController::class, 'upload']);
 });

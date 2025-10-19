@@ -6,6 +6,8 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Http\Resources\ProductResource;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Str;
+use App\Http\Requests\ProductCreateRequest;
 
 class ProductController extends Controller
 {
@@ -29,9 +31,18 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ProductCreateRequest $request)
     {
         //
+        
+        $product = Product::create([
+            'name' => $request->name,
+            'description' => $request->description,
+            'price' => $request->price,
+            'image_url' => $request->image_url
+        ]);
+        return response()->json(new ProductResource($product), Response::HTTP_CREATED);
+
     }
 
     /**
@@ -57,9 +68,14 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(ProductCreateRequest $request, $id)
     {
-        //
+        $product = Product::find($id);
+        if (!$product) {
+            return response()->json(['message' => 'Product not found'], Response::HTTP_NOT_FOUND);
+        }
+        $product->update($request->only(['name', 'description', 'price', 'image_url']));
+        return response()->json(new ProductResource($product), Response::HTTP_ACCEPTED);
     }
 
     /**
