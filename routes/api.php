@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ImageController;
+use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,5 +37,7 @@ Route::group(['middleware' => 'auth:api'], function() {
    Route::post('/update-profile', [UserController::class, 'updateProfile']);
    Route::apiResource('roles', RoleController::class);
    Route::apiResource('products', ProductController::class);
+   Route::apiResource('orders', OrderController::class)->only(['index', 'show']);
    Route::post('/upload-image', [ImageController::class, 'upload']);
+   Route::get('/export-orders-csv', [OrderController::class, 'exportCsv']);
 });
