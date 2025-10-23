@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\RoleResource;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\DB;
 
 class RoleController extends Controller
 {
@@ -13,8 +15,8 @@ class RoleController extends Controller
      */
     public function index()
     {
-        //
-        return response()->json(Role::all());
+       
+        return RoleResource::collection(Role::all());
     }
 
     /**
@@ -26,6 +28,12 @@ class RoleController extends Controller
         $role = Role::create([
             'name' => $request->name
         ]);
+
+        if($permissions = $request->input('permissions')) {
+            foreach($permissions as $permission) {
+                $role->permissions()->attach($permission);
+            }
+        }
         return response()->json($role, Response::HTTP_CREATED);
     }
 
@@ -35,7 +43,7 @@ class RoleController extends Controller
     public function show($id)
     {
         //
-        return response()->json(Role::find($id), Response::HTTP_OK);
+        return response()->json(new RoleResource(Role::find($id)), Response::HTTP_OK);
     }
 
     /**
@@ -43,8 +51,13 @@ class RoleController extends Controller
      */
     public function update(Request $request, Role $role)
     {
-        //
         $role->update($request->only(['name']));
+        DB::table('role_permission')->where('role_id', $role->id)->delete();
+        if($permissions = $request->input('permissions')) {
+            foreach($permissions as $permission) {
+                $role->permissions()->attach($permission);
+            }
+        }
         return response()->json($role, Response::HTTP_OK);
     }
 
@@ -53,7 +66,7 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
-        //
+        DB::table('role_permission')->where('role_id', $role->id)->delete();
         $role->delete();
         return response()->json(null, Response::HTTP_NO_CONTENT);
     }

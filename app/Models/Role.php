@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Permission;
 
 /**
  * @property int $id
@@ -20,4 +22,9 @@ class Role extends Model
     protected $guarded = ['id'];
 
     public $timestamps = false;
+
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'role_permission');
+    }
 }
