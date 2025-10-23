@@ -88,4 +88,9 @@ class User extends Authenticatable implements OAuthenticatable
     {
         return $this->belongsTo(Role::class);
     }
+
+    public function permissions()
+    {
+        return $this->role->permissions->pluck('name');
+    }
 }
