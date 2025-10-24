@@ -21,7 +21,9 @@ class OrderFactory extends Factory
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName(),
             'email' => $this->faker->unique()->safeEmail(),
-            'phone' => $this->faker->phoneNumber()
+            'phone' => $this->faker->phoneNumber(),
+            'created_at' => $this->faker->dateTime(),
+            'updated_at' => $this->faker->dateTime()
         ];
     }
 }
