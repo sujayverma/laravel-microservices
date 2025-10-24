@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\RegisterRequest;
+use Illuminate\Support\Facades\Cookie;
 
 class AuthController extends Controller
 {
@@ -19,11 +20,23 @@ class AuthController extends Controller
             $user = auth()->user();
             $token = $user->createToken('API Token')->accessToken;
 
+            $cookie = cookie(
+                'jwt',            // name
+                $token,                  // value
+                60 * 24 * 1,             // duration (in minutes) → 7 days
+                '/',                     // path
+                null,                    // domain (default current)
+                false,                    // secure (only HTTPS)
+                true,                    // httpOnly (inaccessible to JS)
+                false,                   // raw
+                'Strict'                 // SameSite policy
+            );
+           
             return response()->json([
                 'message' => 'Login successful',
                 'token' => $token,
                 // 'user' => $user
-            ], Response::HTTP_OK);
+            ], Response::HTTP_OK)->cookie($cookie);
         } else {
             return response()->json(['message' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
         }
@@ -31,8 +44,9 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->token()->revoke();
-        return response()->json(['message' => 'Logout successful'], Response::HTTP_OK);
+        $request->user()?->token()?->revoke();
+        $cookie = cookie()->forget('jwt');
+        return response()->json(['message' => 'Logout successful'], Response::HTTP_OK)->cookie($cookie);
     }
 
     public function register(RegisterRequest $request)
