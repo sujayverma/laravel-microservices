@@ -8,6 +8,7 @@ use App\Http\Resources\ProductResource;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Str;
 use App\Http\Requests\ProductCreateRequest;
+use Illuminate\Support\Facades\Gate;
 
 class ProductController extends Controller
 {
@@ -16,16 +17,9 @@ class ProductController extends Controller
      */
     public function index()
     {
+        Gate::authorize('view', 'products');
         $products = Product::paginate(10);
         return ProductResource::collection($products);
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    { 
-        //
     }
 
     /**
@@ -33,8 +27,7 @@ class ProductController extends Controller
      */
     public function store(ProductCreateRequest $request)
     {
-        //
-        
+        Gate::authorize('edit', 'products');
         $product = Product::create([
             'name' => $request->name,
             'description' => $request->description,
@@ -50,6 +43,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
+        Gate::authorize('view', 'products');
         $product = Product::find($id);
         if (!$product) {
             return response()->json(['message' => 'Product not found'], Response::HTTP_NOT_FOUND);
@@ -57,19 +51,13 @@ class ProductController extends Controller
         return response()->json(new ProductResource($product), Response::HTTP_OK);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Product $product)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(ProductCreateRequest $request, $id)
     {
+        Gate::authorize('edit', 'products');
         $product = Product::find($id);
         if (!$product) {
             return response()->json(['message' => 'Product not found'], Response::HTTP_NOT_FOUND);
@@ -83,6 +71,7 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
+        Gate::authorize('edit', 'products');
         $product = Product::find($id);
         if (!$product) {
             return response()->json(['message' => 'Product not found'], Response::HTTP_NOT_FOUND);

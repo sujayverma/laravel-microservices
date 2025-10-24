@@ -9,6 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Http\Resources\UserResource;
+use Illuminate\Support\Facades\Gate;
 
 class UserController extends Controller
 {
@@ -30,7 +31,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        // return response()->json(['message' => 'User index']);
+        Gate::authorize('view', 'users');
         $users = User::paginate(10); // you can specify page size
         if ($users->isEmpty()) {
             return response()->json(['message' => 'No users found'], Response::HTTP_NOT_FOUND);
@@ -40,6 +41,7 @@ class UserController extends Controller
 
     public function show($id)
     {
+        Gate::authorize('view', 'users');
         $user = User::find($id);
         if (!$user) {
             return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
@@ -49,6 +51,7 @@ class UserController extends Controller
 
     public function store(UserCreateRequest $request)
     {
+        //  Gates used in Request.
         $user = User::create([
             'first_name' => $request->first_name,
             'last_name' => $request->last_name,
@@ -61,6 +64,7 @@ class UserController extends Controller
 
     public function update(UserUpdateRequest $request, $id)
     {
+        // Gates used in Request.
         $user = User::find($id);
         if (!$user) {
             return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);
@@ -73,6 +77,7 @@ class UserController extends Controller
 
     public function destroy($id)
     {
+        Gate::authorize('edit', 'users');
         $user = User::find($id);
         if (!$user) {
             return response()->json(['message' => 'User not found'], Response::HTTP_NOT_FOUND);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Http\Resources\OrderResource;
+use Illuminate\Support\Facades\Gate;
 
 class OrderController extends Controller
 {
@@ -12,12 +13,14 @@ class OrderController extends Controller
 
     public function index()
     {
+        Gate::authorize('view', 'orders');
         $orders = Order::paginate(10);
         return OrderResource::collection($orders);
     }
 
     public function show($id)
     {
+        Gate::authorize('view', 'orders');
         $order = Order::with('orderItems.product')->find($id);
         if (!$order) {
             return response()->json(['message' => 'Order not found'], 404);
@@ -27,6 +30,7 @@ class OrderController extends Controller
 
     public function exportCsv()
     {
+        Gate::authorize('view', 'orders');
         $orders = Order::with('orderItems.product')->get();
 
         $filename = "orders_export_" . date('Ymd_His') . ".csv";
