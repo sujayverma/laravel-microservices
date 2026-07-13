@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Http\Resources\RoleResource;
 
 class RoleController extends Controller
 {
@@ -14,7 +15,7 @@ class RoleController extends Controller
     public function index()
     {
         //
-        return response()->json(Role::all());
+        return RoleResource::collection(Role::all());
     }
 
     /**
@@ -22,11 +23,22 @@ class RoleController extends Controller
      */
     public function store(Request $request)
     {
-        //
         $role = Role::create([
             'name' => $request->name
         ]);
-        return response()->json($role, Response::HTTP_CREATED);
+
+        if ($permissions = $request->input('permissions')) {
+            $role->permissions()->sync($permissions);
+        }
+        // if ($permissions = $request->input('permissions')) {
+        //     foreach ($permissions as $permissionId) {
+        //         DB::table('role_permissions')->insert([
+        //             'role_id' => $role->id,
+        //             'permission_id' => $permissionId
+        //         ]); 
+        //     }
+        // }
+        return response()->json(new RoleResource($role), Response::HTTP_CREATED);
     }
 
     /**
@@ -35,7 +47,7 @@ class RoleController extends Controller
     public function show($id)
     {
         //
-        return response()->json(Role::find($id), Response::HTTP_OK);
+        return response()->json(new RoleResource(Role::find($id)), Response::HTTP_OK);
     }
 
     /**
@@ -43,9 +55,13 @@ class RoleController extends Controller
      */
     public function update(Request $request, Role $role)
     {
-        //
+        
+        DB::table('role_permissions')->where('role_id', $role->id)->delete();
+        if ($permissions = $request->input('permissions')) {
+            $role->permissions()->sync($permissions);
+        }
         $role->update($request->only(['name']));
-        return response()->json($role, Response::HTTP_OK);
+        return response()->json(new RoleResource($role), Response::HTTP_OK);
     }
 
     /**
@@ -54,6 +70,7 @@ class RoleController extends Controller
     public function destroy(Role $role)
     {
         //
+        DB::table('role_permissions')->where('role_id', $role->id)->delete();
         $role->delete();
         return response()->json(null, Response::HTTP_NO_CONTENT);
     }
